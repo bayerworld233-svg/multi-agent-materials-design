@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Multi-Agent AI Platform for Intelligent Materials Design</title>
+<meta name="description" content="Prototype demo of a multi-agent AI system for porous alumina design via freeze casting." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --color-bg:           #0a0e17;
+  --color-bg-2:         #0d1320;
+  --color-card:         #111827;
+  --color-card-2:       #0e1522;
+  --color-inner:        #060912;
+  --color-accent:       #00c9b1;
+  --color-accent-dim:   rgba(0, 201, 177, 0.15);
+  --color-accent-glow:  rgba(0, 201, 177, 0.35);
+  --color-amber:        #f5a623;
+  --color-amber-dim:    rgba(245, 166, 35, 0.18);
+  --color-text:         #e6ecf3;
+  --color-text-strong:  #ffffff;
+  --color-muted:        #6c7a8f;
+  --color-muted-soft:   #9aa7bd;
+  --color-border:       rgba(0, 201, 177, 0.15);
+  --color-border-soft:  rgba(255, 255, 255, 0.05);
+
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-mono:    'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+
+  --shadow-card:    0 1px 0 rgba(255,255,255,0.02) inset, 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-glow:    0 0 0 1px var(--color-accent-dim), 0 8px 28px rgba(0,201,177,0.12);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background depth: subtle radial accents + faint noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 10%, rgba(0,201,177,0.05), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 20%, rgba(245,166,35,0.025), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 50% 100%, rgba(0,201,177,0.03), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.6  0 0 0 0 0.7  0 0 0 0 0.8  0 0 0 0.05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============ Hero ============ */
+
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 56px 40px 32px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.hero-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 18px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: var(--color-accent);
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 18px;
+  color: var(--color-text-strong);
+  max-width: 18ch;
+}
+
+.hero .subtitle {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--color-muted-soft);
+  max-width: 56ch;
+  margin: 0 0 26px;
+  line-height: 1.6;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  color: var(--color-muted-soft);
+  border: 1px solid var(--color-border-soft);
+}
+
+.badge-amber {
+  background: var(--color-amber-dim);
+  color: var(--color-amber);
+  border-color: rgba(245,166,35,0.3);
+}
+
+.disclaimer {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-muted);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ============ System Architecture ============ */
+
+.architecture {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 40px 0;
+}
+
+.arch-inner {
+  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, var(--color-card), var(--color-card-2));
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 26px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.arch-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--color-border-soft);
+}
+
+.arch-header h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0;
+  color: var(--color-text-strong);
+}
+
+.arch-header .arch-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.arch-pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent-dim) transparent;
+}
+
+.arch-pipeline::-webkit-scrollbar { height: 6px; }
+.arch-pipeline::-webkit-scrollbar-thumb {
+  background: var(--color-accent-dim);
+  border-radius: 3px;
+}
+
+.arch-node {
+  flex: 1 1 0;
+  min-width: 122px;
+  background: var(--color-inner);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px 13px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.arch-node:hover {
+  border-color: var(--color-accent-dim);
+  background: linear-gradient(180deg, var(--color-inner), rgba(0,201,177,0.05));
+}
+
+.arch-node .arch-num {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+}
+
+.arch-node .arch-glyph {
+  font-size: 16px;
+  color: var(--color-accent);
+  line-height: 1;
+  margin: 2px 0 4px;
+}
+
+.arch-node .arch-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--color-text-strong);
+  line-height: 1.25;
+}
+
+.arch-node .arch-desc {
+  font-size: 10.5px;
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.arch-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--color-accent);
+  opacity: 0.6;
+  font-size: 14px;
+  user-select: none;
+}
+
+@media (max-width: 900px) {
+  .architecture { padding: 18px 22px 0; }
+  .arch-pipeline { flex-direction: column; gap: 8px; }
+  .arch-arrow { transform: rotate(90deg); align-self: center; }
+}
+
+/* ============ Main layout ============ */
+
+.layout {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 36px 40px 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.col { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+/* ============ Panels ============ */
+
+.panel {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 24px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.panel:hover {
+  border-color: rgba(0,201,177,0.25);
+  box-shadow: var(--shadow-card), 0 0 32px rgba(0,201,177,0.05);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--color-border-soft);
+}
+
+.panel-header h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--color-text-strong);
+}
+
+.panel-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  padding: 3px 8px;
+  border: 1px solid var(--color-accent-dim);
+  border-radius: 3px;
+}
+
+/* ============ Input panel ============ */
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 18px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.full { grid-column: span 2; }
+
+.field label {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field label .live-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0;
+  color: var(--color-accent);
+  text-transform: none;
+}
+
+.field select,
+.field input[type="text"],
+.field textarea {
+  background: var(--color-inner);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.field select:focus,
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(0,201,177,0.12);
+}
+
+.field textarea {
+  min-height: 64px;
+  resize: vertical;
+  font-family: var(--font-mono);
+  line-height: 1.5;
+}
+
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%2300c9b1' d='M0 0l5 6 5-6z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+/* Range slider styling */
+.field input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent) var(--fill, 50%), rgba(255,255,255,0.08) var(--fill, 50%));
+  border-radius: 2px;
+  outline: none;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+.field input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-accent);
+  cursor: grab;
+  box-shadow: 0 0 0 4px rgba(0,201,177,0.12);
+}
+
+.field input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 2px solid var(--color-accent);
+  cursor: grab;
+}
+
+/* Chip row */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 18px;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgba(0,201,177,0.06);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-soft);
+  padding: 7px 11px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.chip:hover {
+  background: rgba(0,201,177,0.1);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.chips-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 18px 0 8px;
+}
+
+/* Run button */
+.btn-primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--color-accent);
+  color: #00211c;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+  box-shadow: 0 0 24px rgba(0,201,177,0.18);
+}
+
+.btn-primary:not(:disabled):not(.ran) {
+  animation: pulse-cta 2.4s ease-in-out infinite;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1adcc4;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+  background: rgba(0,201,177,0.25);
+  color: rgba(255,255,255,0.5);
+  cursor: not-allowed;
+  box-shadow: none;
+  animation: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-soft);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.btn-secondary:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(0,201,177,0.06);
+}
+
+@keyframes pulse-cta {
+  0%, 100% { box-shadow: 0 0 24px rgba(0,201,177,0.18); }
+  50%      { box-shadow: 0 0 36px rgba(0,201,177,0.4); }
+}
+
+/* Flash effect on chip-fill */
+.flash {
+  animation: flash 600ms ease-out;
+}
+
+@keyframes flash {
+  0%   { box-shadow: 0 0 0 0 rgba(0,201,177,0.6); }
+  100% { box-shadow: 0 0 0 8px rgba(0,201,177,0); }
+}
+
+/* ============ Workflow panel ============ */
+
+.progress {
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-accent), #5be0cd);
+  transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-card {
+  background: var(--color-card-2);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: border-color 240ms ease, background 240ms ease;
+  position: relative;
+}
+
+.agent-card[data-status="running"] {
+  border-color: rgba(245,166,35,0.4);
+  background: linear-gradient(135deg, var(--color-card-2), rgba(245,166,35,0.04));
+}
+
+.agent-card[data-status="completed"] {
+  border-color: var(--color-accent-dim);
+  background: linear-gradient(135deg, var(--color-card-2), rgba(0,201,177,0.04));
+}
+
+.agent-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.agent-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--color-muted-soft);
+  background: var(--color-inner);
+  border: 1px solid var(--color-border-soft);
+  border-radius: 8px;
+  transition: color 220ms ease, border-color 220ms ease;
+}
+
+.agent-card[data-status="running"] .agent-icon {
+  color: var(--color-amber);
+  border-color: rgba(245,166,35,0.4);
+}
+
+.agent-card[data-status="completed"] .agent-icon {
+  color: var(--color-accent);
+  border-color: var(--color-accent-dim);
+}
+
+.agent-meta { flex: 1; min-width: 0; }
+
+.agent-meta .agent-num {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 2px;
+}
+
+.agent-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-strong);
+  margin: 0;
+}
+
+.agent-role {
+  font-size: 11.5px;
+  color: var(--color-muted);
+  margin: 1px 0 0;
+}
+
+.agent-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.agent-card[data-status="pending"] .agent-status {
+  background: rgba(255,255,255,0.04);
+  color: var(--color-muted);
+}
+
+.agent-card[data-status="running"] .agent-status {
+  background: var(--color-amber-dim);
+  color: var(--color-amber);
+}
+
+.agent-card[data-status="completed"] .agent-status {
+  background: rgba(0,201,177,0.12);
+  color: var(--color-accent);
+}
+
+.agent-status .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.agent-card[data-status="running"] .agent-status .dot {
+  opacity: 1;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+
+.agent-card[data-status="completed"] .agent-status .dot { opacity: 1; }
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%      { transform: scale(1.4); opacity: 0.5; }
+}
+
+.agent-output {
+  display: none;
+  background: var(--color-inner);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  animation: fade-up 320ms ease-out;
+}
+
+.agent-card[data-status="completed"] .agent-output {
+  display: block;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ Results column ============ */
+
+.results-placeholder {
+  background: var(--color-card-2);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 12.5px;
+}
+
+.results-placeholder .placeholder-icon {
+  font-size: 36px;
+  color: var(--color-accent);
+  opacity: 0.5;
+  margin-bottom: 10px;
+}
+
+.result-panel {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 480ms ease-out, transform 480ms ease-out;
+  display: none;
+}
+
+.result-panel.visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Param table */
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.param-table tr {
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.param-table tr:last-child { border-bottom: none; }
+
+.param-table td {
+  padding: 11px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.param-table td.param-name {
+  color: var(--color-muted-soft);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+}
+
+.param-table td.param-value {
+  color: var(--color-accent);
+  text-align: right;
+  font-weight: 500;
+}
+
+.param-table td.param-unit {
+  color: var(--color-muted);
+  text-align: right;
+  font-size: 11.5px;
+  padding-left: 8px;
+  width: 50px;
+}
+
+/* Property bars */
+.props { display: flex; flex-direction: column; gap: 14px; }
+
+.prop-row .prop-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+
+.prop-row .prop-name {
+  font-size: 11.5px;
+  color: var(--color-muted-soft);
+  letter-spacing: 0.02em;
+}
+
+.prop-row .prop-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--color-text-strong);
+}
+
+.prop-row .prop-value .check {
+  color: var(--color-accent);
+  margin-left: 6px;
+  font-size: 11px;
+}
+
+.prop-bar {
+  height: 5px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prop-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), #5be0cd);
+  border-radius: 3px;
+  width: 0;
+  transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* KPI cards (target vs predicted) */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--color-inner);
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--color-muted);
+  opacity: 0.5;
+}
+
+.kpi-card.pass::before { background: var(--color-accent); opacity: 1; }
+.kpi-card.fail::before { background: var(--color-amber); opacity: 1; }
+
+.kpi-name {
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.kpi-pair {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-mono);
+}
+
+.kpi-pair .kpi-target {
+  color: var(--color-muted-soft);
+  font-size: 11.5px;
+}
+
+.kpi-pair .kpi-target b {
+  color: var(--color-text);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.kpi-pair .kpi-arrow {
+  color: var(--color-accent);
+  opacity: 0.5;
+  font-size: 12px;
+}
+
+.kpi-pair .kpi-predicted {
+  color: var(--color-text-strong);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.kpi-pair .kpi-predicted .unit {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin-left: 3px;
+}
+
+.kpi-status {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  align-self: flex-start;
+}
+
+.kpi-card.pass .kpi-status {
+  background: rgba(0,201,177,0.12);
+  color: var(--color-accent);
+}
+
+.kpi-card.fail .kpi-status {
+  background: var(--color-amber-dim);
+  color: var(--color-amber);
+}
+
+@media (max-width: 520px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* Human review banner shown inside the report panel */
+.human-review {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--color-amber-dim);
+  border: 1px solid rgba(245,166,35,0.35);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-amber);
+  line-height: 1.55;
+}
+
+.human-review .review-icon {
+  flex: 0 0 auto;
+  font-size: 14px;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.human-review .review-body {
+  color: #f3d599;
+}
+
+.human-review .review-body b {
+  color: var(--color-amber);
+  font-weight: 600;
+}
+
+/* Chart container */
+.chart-container {
+  position: relative;
+  height: 320px;
+}
+
+/* Report doc */
+.report-doc {
+  background: var(--color-inner);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ============ Why-matters section ============ */
+
+.why-matters {
+  position: relative;
+  z-index: 1;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px 40px 60px;
+}
+
+.why-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.why-header h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0;
+  color: var(--color-text-strong);
+}
+
+.why-header .line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-border), transparent);
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.why-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px 22px 24px;
+  transition: border-color 240ms ease, transform 240ms ease;
+}
+
+.why-card:hover {
+  border-color: rgba(0,201,177,0.3);
+  transform: translateY(-2px);
+}
+
+.why-card .why-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--color-accent);
+  margin-bottom: 12px;
+}
+
+.why-card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text-strong);
+  margin: 0 0 8px;
+  letter-spacing: -0.005em;
+}
+
+.why-card p {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-muted-soft);
+  line-height: 1.65;
+}
+
+/* ============ Footer ============ */
+
+.footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--color-border-soft);
+  padding: 22px 40px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.footer .accent { color: var(--color-accent); }
+
+/* ============ Mobile ============ */
+
+@media (max-width: 900px) {
+  .hero { padding: 40px 22px 26px; }
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 26px 22px 36px;
+    gap: 22px;
+  }
+  .why-matters { padding: 4px 22px 44px; }
+  .why-grid { grid-template-columns: 1fr; }
+  .field-grid { grid-template-columns: 1fr; }
+  .field.full { grid-column: span 1; }
+  .footer { padding: 18px 22px; }
+}
+
+@media (max-width: 520px) {
+  .agent-row { gap: 10px; }
+  .agent-icon { width: 32px; height: 32px; font-size: 18px; }
+  .agent-status { font-size: 9px; padding: 3px 7px; }
+}
+
+/* Focus visibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+button:focus-visible {
+  outline-offset: 3px;
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Materials Discovery / Multi-Agent System</div>
+    <h1>Multi-Agent AI Platform for Intelligent Materials Design</h1>
+    <p class="subtitle">Collaborative AI agents guide researchers from design goals to <strong style="color: var(--color-text-strong); font-weight: 500;">data-informed process windows</strong> &mdash; in seconds, with human review.</p>
+    <div class="badges">
+      <span class="badge badge-amber">Prototype Demo</span>
+      <span class="badge">Freeze Casting</span>
+      <span class="badge">Porous Alumina</span>
+    </div>
+    <p class="disclaimer">This is a research prototype using simulated agent outputs. Not scientifically validated &mdash; experimental verification required before any wet-lab use.</p>
+  </div>
+</header>
+
+<section class="architecture" aria-labelledby="arch-heading">
+  <div class="arch-inner">
+    <div class="arch-header">
+      <h2 id="arch-heading">System Architecture</h2>
+      <span class="arch-eyebrow">Pipeline overview</span>
+    </div>
+    <div class="arch-pipeline">
+      <div class="arch-node">
+        <span class="arch-num">01</span>
+        <span class="arch-glyph">◇</span>
+        <span class="arch-name">User Goal</span>
+        <span class="arch-desc">material, porosity, strength, notes</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">02</span>
+        <span class="arch-glyph">⬡</span>
+        <span class="arch-name">Agent Orchestrator</span>
+        <span class="arch-desc">decomposes goal, routes sub-tasks</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">03</span>
+        <span class="arch-glyph">◈</span>
+        <span class="arch-name">Literature RAG</span>
+        <span class="arch-desc">retrieves mechanisms + prior ranges</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">04</span>
+        <span class="arch-glyph">▦</span>
+        <span class="arch-name">Materials Dataset</span>
+        <span class="arch-desc">process-property correlations</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">05</span>
+        <span class="arch-glyph">◎</span>
+        <span class="arch-name">Prediction Model</span>
+        <span class="arch-desc">surrogate structure / property</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">06</span>
+        <span class="arch-glyph">⟁</span>
+        <span class="arch-name">Optimization Engine</span>
+        <span class="arch-desc">Bayesian search over parameters</span>
+      </div>
+      <span class="arch-arrow" aria-hidden="true">→</span>
+      <div class="arch-node">
+        <span class="arch-num">07</span>
+        <span class="arch-glyph">☰</span>
+        <span class="arch-name">Design Report</span>
+        <span class="arch-desc">candidate recipe + human review</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="layout">
+  <!-- LEFT COLUMN -->
+  <div class="col col-left">
+
+    <!-- Input panel -->
+    <section class="panel input-panel" aria-labelledby="input-heading">
+      <header class="panel-header">
+        <h2 id="input-heading">Design Inputs</h2>
+        <span class="panel-tag">step 01</span>
+      </header>
+
+      <div class="field-grid">
+        <div class="field">
+          <label for="material">Material System</label>
+          <select id="material">
+            <option value="al2o3">Porous Alumina (Al₂O₃)</option>
+            <option value="hap">Hydroxyapatite</option>
+            <option value="sic">Silicon Carbide</option>
+            <option value="tio2">Titanium Dioxide</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="method">Processing Method</label>
+          <select id="method">
+            <option value="freeze-casting">Freeze Casting</option>
+            <option value="gel-casting">Gel Casting</option>
+            <option value="slip-casting">Slip Casting</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="porosity">Target Porosity <span class="live-value" id="porosity-val">72%</span></label>
+          <input id="porosity" type="range" min="50" max="90" value="72" step="1" />
+        </div>
+
+        <div class="field">
+          <label for="strength">Target Compressive Strength <span class="live-value" id="strength-val">6 MPa</span></label>
+          <input id="strength" type="range" min="1" max="20" value="6" step="1" />
+        </div>
+
+        <div class="field full">
+          <label for="notes">Additional Design Notes</label>
+          <textarea id="notes" placeholder="e.g. biomedical scaffold, needs interconnected pores"></textarea>
+        </div>
+      </div>
+
+      <div class="chips-label">Example design goals</div>
+      <div class="chips" id="chips"></div>
+
+      <button id="run-btn" class="btn-primary" type="button">
+        <span>▶</span> Run Multi-Agent Design Workflow
+      </button>
+    </section>
+
+    <!-- Workflow panel -->
+    <section class="panel workflow-panel" aria-labelledby="workflow-heading">
+      <header class="panel-header">
+        <h2 id="workflow-heading">Agent Workflow</h2>
+        <button id="reset-btn" class="btn-secondary" type="button">Reset Demo</button>
+      </header>
+      <div class="progress" aria-hidden="true">
+        <div id="progress-fill" class="progress-fill"></div>
+      </div>
+      <ol id="agents" class="agents"></ol>
+    </section>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col col-right" id="results-col">
+
+    <div class="results-placeholder" id="results-placeholder">
+      <div class="placeholder-icon">⊟</div>
+      <p>Run the workflow to generate process recommendations.<br />
+      Results &mdash; parameters, predicted properties, target match, and report &mdash; will appear here.</p>
+    </div>
+
+    <section class="panel result-panel" data-panel="params">
+      <header class="panel-header">
+        <h2>Recommended Process Parameters</h2>
+        <span class="panel-tag">a</span>
+      </header>
+      <table class="param-table">
+        <tbody id="param-rows"></tbody>
+      </table>
+    </section>
+
+    <section class="panel result-panel" data-panel="properties">
+      <header class="panel-header">
+        <h2>Predicted Properties</h2>
+        <span class="panel-tag">b</span>
+      </header>
+      <div class="props" id="prop-rows"></div>
+    </section>
+
+    <section class="panel result-panel" data-panel="kpis">
+      <header class="panel-header">
+        <h2>Target Match</h2>
+        <span class="panel-tag">c</span>
+      </header>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </section>
+
+    <section class="panel result-panel" data-panel="radar">
+      <header class="panel-header">
+        <h2>Target vs Predicted (Radar)</h2>
+        <span class="panel-tag">d</span>
+      </header>
+      <div class="chart-container">
+        <canvas id="radar-chart"></canvas>
+      </div>
+    </section>
+
+    <section class="panel result-panel" data-panel="report">
+      <header class="panel-header">
+        <h2>Generated Report</h2>
+        <span class="panel-tag">e</span>
+      </header>
+      <pre class="report-doc" id="report-doc"></pre>
+      <div class="human-review" role="note">
+        <span class="review-icon" aria-hidden="true">⚠</span>
+        <div class="review-body">
+          <b>Human Review Required.</b> This is a prototype prediction generated from simulated data.
+          A domain expert must review the parameter set, and experimental validation is required
+          before any wet-lab procurement or processing decisions.
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<section class="why-matters">
+  <div class="why-header">
+    <h2>Why This Matters</h2>
+    <div class="line"></div>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-num">01</div>
+      <h3>Accelerates Discovery</h3>
+      <p>Reduces iteration cycles from months to minutes by connecting literature, data, and prediction in one workflow.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-num">02</div>
+      <h3>Process-Property Intelligence</h3>
+      <p>Makes implicit expert knowledge about freeze casting explicit and queryable by any researcher.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-num">03</div>
+      <h3>Extensible Architecture</h3>
+      <p>Same multi-agent framework applies to battery materials, mesoporous catalysts, and biomedical scaffolds.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <span class="accent">◆</span> Multi-Agent Materials Design &nbsp;/&nbsp; Research Prototype &nbsp;/&nbsp; 2026
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ============================================================
+  // Static configuration
+  // ============================================================
+
+  // Material profiles. strengthScale modulates predicted strength
+  // for a given solid loading; sinter sets sintering temperature.
+  const MATERIALS = {
+    al2o3: { id: 'al2o3', name: 'Porous Alumina',   sym: 'Al₂O₃', sinter: 1550, strengthScale: 1.0  },
+    hap:   { id: 'hap',   name: 'Hydroxyapatite',   sym: 'HAp',   sinter: 1250, strengthScale: 0.65 },
+    sic:   { id: 'sic',   name: 'Silicon Carbide',  sym: 'SiC',   sinter: 2100, strengthScale: 1.50 },
+    tio2:  { id: 'tio2',  name: 'Titanium Dioxide', sym: 'TiO₂',  sinter: 1400, strengthScale: 0.85 }
+  };
+
+  // Processing-method profiles. alignmentCap caps the predicted pore alignment
+  // (freeze casting gets ~lamellar/aligned; gel- and slip-casting are far less directional).
+  const METHODS = {
+    'freeze-casting': { id: 'freeze-casting', name: 'Freeze Casting', alignmentCap: 0.95, label: 'freeze casting' },
+    'gel-casting':    { id: 'gel-casting',    name: 'Gel Casting',    alignmentCap: 0.45, label: 'gel casting' },
+    'slip-casting':   { id: 'slip-casting',   name: 'Slip Casting',   alignmentCap: 0.30, label: 'slip casting' }
+  };
+
+  // Six agents, with exact icons / labels / timings from the spec
+  const AGENTS = [
+    { key: 'planner',      name: 'Planner Agent',       icon: '⬡', role: 'Goal Decomposition',         start: 0,    duration: 1500 },
+    { key: 'literature',   name: 'Literature Agent',    icon: '◈', role: 'Mechanism Retrieval',        start: 1500, duration: 2000 },
+    { key: 'data',         name: 'Data Agent',          icon: '▦', role: 'Process-Property Analysis',  start: 3500, duration: 1800 },
+    { key: 'prediction',   name: 'Prediction Agent',    icon: '◎', role: 'Structure Prediction',       start: 5300, duration: 2000 },
+    { key: 'optimization', name: 'Optimization Agent',  icon: '⟁', role: 'Parameter Optimization',     start: 7300, duration: 1500 },
+    { key: 'report',       name: 'Report Agent',        icon: '☰', role: 'Recommendation Synthesis',   start: 8800, duration: 1200 }
+  ];
+
+  // Example design-goal chips. Clicking fills all input fields.
+  const CHIPS = [
+    {
+      label: 'Biomedical scaffold — 75% porosity, 5 MPa',
+      material: 'al2o3', method: 'freeze-casting',
+      porosity: 75, strength: 5,
+      notes: 'biomedical scaffold, needs interconnected pores for cell infiltration'
+    },
+    {
+      label: 'Thermal insulation — 80% porosity, 3 MPa',
+      material: 'al2o3', method: 'freeze-casting',
+      porosity: 80, strength: 3,
+      notes: 'low thermal conductivity, fine isotropic pores preferred'
+    },
+    {
+      label: 'Filtration membrane — 65% porosity, 10 MPa',
+      material: 'al2o3', method: 'freeze-casting',
+      porosity: 65, strength: 10,
+      notes: 'filtration membrane, aligned pore channels for high flux'
+    }
+  ];
+
+  // ============================================================
+  // Helpers
+  // ============================================================
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const round1 = v => Math.round(v * 10) / 10;
+  const round2 = v => Math.round(v * 100) / 100;
+  // Format a signed number with proper Unicode minus
+  const fmtSigned = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(1);
+  // Signed delta with leading sign
+  const fmtDelta = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1);
+
+  // ============================================================
+  // generateRecommendation — rule-based, input-driven
+  //   Inputs:  { material, method, porosity, strength, notes }
+  //   Returns: a fully populated recommendation object
+  //
+  // Rules (all simple / illustrative, not scientifically validated):
+  //   - solid loading drops with higher target porosity
+  //     and rises with higher target strength
+  //   - cooling rate gets faster (more negative) for higher target strength
+  //   - predicted porosity comes from solid loading (inverse)
+  //   - predicted strength comes from solid loading scaled by material capability
+  //   - pore size shrinks with faster cooling; alignment grows
+  //   - non-freeze-casting methods cap pore alignment
+  // ============================================================
+  function generateRecommendation(inputs) {
+    const mat  = MATERIALS[inputs.material] || MATERIALS.al2o3;
+    const meth = METHODS[inputs.method] || METHODS['freeze-casting'];
+    const pTarget = inputs.porosity;
+    const sTarget = inputs.strength;
+
+    // --- Process parameters ---
+    // Centered on (porosity=72%, strength=6 MPa) → solid_loading=34 vol%
+    let solid = 34 + (72 - pTarget) * 0.55 + (sTarget - 6) * 0.7;
+    // A stronger material achieves the same strength at lower solid loading
+    solid -= (mat.strengthScale - 1) * 4;
+    solid = clamp(solid, 22, 48);
+
+    // Cooling rate: faster (more negative) for higher target strength
+    let cooling = -1.4 - (sTarget - 5) * 0.18;
+    cooling = clamp(cooling, -3.5, -0.8);
+
+    // Cold plate roughly tracks cooling rate
+    let coldPlate = Math.round(cooling * 16);
+    coldPlate = clamp(coldPlate, -40, -12);
+
+    // Dispersant / binder: subtle dependence on target porosity
+    let dispersant = clamp(round1(0.8 + (pTarget - 72) * 0.01), 0.5, 1.2);
+    let binder     = clamp(round1(2.0 + (pTarget - 72) * 0.02), 1.2, 3.0);
+
+    // --- Predictions ---
+    // Predicted porosity is the inverse of the solid-loading relation
+    let predPorosity = 72 + (34 - solid) / 0.55;
+    predPorosity = clamp(predPorosity, 55, 90);
+
+    // Predicted strength from solid loading × material capability
+    let predStrength = (solid - 24) * 0.6 * mat.strengthScale;
+    predStrength = Math.max(0.4, predStrength);
+
+    // Pore size: bigger when cooling is slow; smaller when fast
+    let poreSize = Math.round(15 + (1.5 / Math.abs(cooling)) * 28);
+    poreSize = clamp(poreSize, 15, 95);
+
+    // Wall thickness scales with solid loading
+    let wall = Math.round(8 + (solid - 22) * 0.7);
+    wall = clamp(wall, 8, 35);
+
+    // Alignment scales with |cooling|, capped by method
+    let alignment = round2(Math.min(meth.alignmentCap, 0.5 + Math.abs(cooling) * 0.14));
+
+    // --- Target match (tolerant) ---
+    const porosityDelta = round1(predPorosity - pTarget);
+    const strengthDelta = round1(predStrength - sTarget);
+    const porosityMet = Math.abs(porosityDelta) <= 4;
+    const strengthMet = strengthDelta >= -0.5;
+    const allMet = porosityMet && strengthMet;
+
+    // --- Confidence (illustrative; penalize off-target results) ---
+    let confidence = 0.85 - Math.abs(porosityDelta) * 0.015 - Math.max(0, -strengthDelta) * 0.04;
+    confidence = clamp(confidence, 0.55, 0.92);
+
+    return {
+      inputs: {
+        material: mat,
+        method: meth,
+        porosity_target: pTarget,
+        strength_target: sTarget,
+        notes: (inputs.notes || '').trim()
+      },
+      parameters: {
+        solid_loading: round1(solid),
+        cooling_rate:  round1(cooling),
+        cold_plate_temp: coldPlate,
+        dispersant,
+        binder,
+        sintering_temp: mat.sinter
+      },
+      predictions: {
+        porosity: round1(predPorosity),
+        strength: round1(predStrength),
+        pore_size: poreSize,
+        wall_thickness: wall,
+        alignment
+      },
+      targets: {
+        porosity_met: porosityMet,
+        strength_met: strengthMet,
+        all_met: allMet,
+        porosity_delta: porosityDelta,
+        strength_delta: strengthDelta
+      },
+      confidence: round2(confidence)
+    };
+  }
+
+  // ============================================================
+  // Agent output templates — all driven by the recommendation
+  // ============================================================
+  const AGENT_TEMPLATES = {
+    planner: r =>
+`Goal decomposed into 4 sub-tasks for ${r.inputs.material.sym} via ${r.inputs.method.label}:
+[1] Retrieve ${r.inputs.method.label} literature for ${r.inputs.material.sym} systems
+[2] Identify process-structure correlations near porosity ${r.inputs.porosity_target}%
+[3] Predict pore morphology from candidate parameter sets
+[4] Optimize solid loading + cooling rate for strength ≥ ${r.inputs.strength_target} MPa
+
+User target window:
+  Porosity   ${r.inputs.porosity_target}% ± 3
+  Strength   ≥ ${r.inputs.strength_target} MPa`,
+
+    literature: r =>
+`Retrieved 3 candidate mechanisms (simulated RAG):
+• Lamellar ice templating creates aligned pores (10–80 µm)
+  parallel to freezing direction. [Deville et al., 2006]
+• Solid loading (25–45 vol%) inversely correlates with porosity;
+  lower loading → higher porosity but reduced wall density.
+• Cooling rate controls lamellae spacing: faster cooling →
+  finer pores (<20 µm), higher alignment score.
+Retrieval confidence: 0.87  (prototype RAG, not peer-reviewed)`,
+
+    data: r =>
+`Analyzed 847 simulated data points from the materials dataset.
+Key correlations (illustrative):
+  Porosity       ↑  with  ↓ solid loading    (r = -0.81)
+  Pore size      ↑  with  ↓ cooling rate     (r = -0.74)
+  Strength       ↑  with  ↑ solid loading    (r = +0.79)
+  Alignment      ↑  with  ↑ cooling rate     (r = +0.68)
+Operating region for user goal:
+  solid loading  ~${round1(r.parameters.solid_loading - 2)}–${round1(r.parameters.solid_loading + 2)} vol%
+  cooling rate   ~${fmtSigned(r.parameters.cooling_rate - 0.3)} to ${fmtSigned(r.parameters.cooling_rate + 0.3)} °C/min`,
+
+    prediction: r => {
+      const pPass = r.targets.porosity_met ? '✓' : '!';
+      const sPass = r.targets.strength_met ? '✓' : '!';
+      return `Running prototype prediction model (surrogate)...
+Input candidate: solid loading ${r.parameters.solid_loading} vol%, cooling rate ${fmtSigned(r.parameters.cooling_rate)} °C/min
+
+Predicted outputs (prototype, requires validation):
+  Porosity             ${r.predictions.porosity}%   [target: ${r.inputs.porosity_target}%  ${pPass}]
+  Average pore size    ${r.predictions.pore_size} µm
+  Wall thickness       ${r.predictions.wall_thickness} µm
+  Pore alignment       ${r.predictions.alignment.toFixed(2)} / 1.0
+  Compressive strength ${r.predictions.strength} MPa  [target: ≥ ${r.inputs.strength_target} MPa  ${sPass}]`;
+    },
+
+    optimization: r =>
+`Bayesian optimization complete (128 iterations, simulated).
+Candidate process parameters:
+  Solid loading       ${r.parameters.solid_loading} vol%
+  Cooling rate        ${fmtSigned(r.parameters.cooling_rate)} °C/min
+  Cold plate temp     ${fmtSigned(r.parameters.cold_plate_temp)} °C
+  Dispersant (Darvan) ${r.parameters.dispersant} wt%
+  Binder (PVA)        ${r.parameters.binder} wt%
+  Sintering           ${r.parameters.sintering_temp} °C
+
+Operating point on the porosity-strength trade-off.
+Prototype confidence: ${r.confidence}  (not a calibrated probability)`,
+
+    report: r => {
+      const status = r.targets.all_met ? 'WITHIN PROTOTYPE TOLERANCE' : 'PARTIAL — REVIEW BELOW';
+      return `CANDIDATE RECOMMENDATION GENERATED
+Material:  ${r.inputs.material.name} (${r.inputs.material.sym})
+Method:    ${r.inputs.method.name}
+Objective: porosity ${r.inputs.porosity_target}%, strength ≥ ${r.inputs.strength_target} MPa
+Status:    ${status}
+
+Prototype prediction — human review and experimental
+validation required before any wet-lab procurement.`;
+    }
+  };
+
+  // ============================================================
+  // Report builder
+  // ============================================================
+  function buildReportText(r) {
+    const allMetLine = r.targets.all_met
+      ? 'WITHIN PROTOTYPE TOLERANCE — candidate ready for human review'
+      : 'PARTIAL MATCH — see deltas below; reframe goal or accept trade-off';
+
+    const porosityLine = `Porosity   target ${r.inputs.porosity_target}%  →  predicted ${r.predictions.porosity}%   (Δ ${fmtDelta(r.targets.porosity_delta)})  ${r.targets.porosity_met ? 'pass' : 'off-target'}`;
+    const strengthLine = `Strength   target ≥ ${r.inputs.strength_target} MPa  →  predicted ${r.predictions.strength} MPa   (Δ ${fmtDelta(r.targets.strength_delta)})  ${r.targets.strength_met ? 'pass' : 'off-target'}`;
+
+    const notesLine = r.inputs.notes ? `Notes:        ${r.inputs.notes}\n` : '';
+
+    return `CANDIDATE MATERIAL DESIGN REPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+USER GOAL
+Material:     ${r.inputs.material.name} (${r.inputs.material.sym})
+Method:       ${r.inputs.method.name}
+Porosity:     ${r.inputs.porosity_target}%   (tolerance ± 3)
+Strength:     ≥ ${r.inputs.strength_target} MPa
+${notesLine}
+PROTOTYPE PREDICTION
+${porosityLine}
+${strengthLine}
+Pore size:    ${r.predictions.pore_size} µm
+Alignment:    ${r.predictions.alignment.toFixed(2)} / 1.0
+Confidence:   ${r.confidence}  (illustrative, not calibrated)
+Status:       ${allMetLine}
+
+DESIGN RATIONALE
+Solid loading at ${r.parameters.solid_loading} vol% with cooling
+rate ${fmtSigned(r.parameters.cooling_rate)} °C/min sets the porosity-strength balance.
+Lower solid loading raises porosity but reduces wall density;
+faster cooling refines lamellae spacing and improves alignment
+(capped at ${r.inputs.method.alignmentCap.toFixed(2)} for ${r.inputs.method.label}).
+The candidate sits near the simulated Pareto front for the
+stated user targets.
+
+CANDIDATE NEXT EXPERIMENT
+Prepare ${r.inputs.material.sym} slurry at ${r.parameters.solid_loading} vol% with
+Darvan 811 (${r.parameters.dispersant} wt%) and PVA (${r.parameters.binder} wt%).
+Process via ${r.inputs.method.label} at ${fmtSigned(r.parameters.cooling_rate)} °C/min
+on a copper cold plate at ${fmtSigned(r.parameters.cold_plate_temp)} °C.
+Sinter at ${r.parameters.sintering_temp} °C / 2h. Characterize via
+mercury porosimetry and uniaxial compression testing.
+
+LIMITATIONS
+This is a prototype prediction generated from simulated data.
+The system has not been scientifically validated. A human
+domain expert must review the parameter set, and experimental
+validation is required before any procurement or processing
+decisions.`;
+  }
+
+  // ============================================================
+  // Runtime state
+  // ============================================================
+  const state = {
+    running: false,
+    completed: 0,
+    chart: null,
+    timeouts: [],
+    rec: null   // current recommendation
+  };
+
+  // ============================================================
+  // Bootstrap
+  // ============================================================
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    renderAgents();
+    renderChips();
+    bindLiveValues();
+    bindButtons();
+    updateRangeFill(document.getElementById('porosity'));
+    updateRangeFill(document.getElementById('strength'));
+  }
+
+  // ============================================================
+  // Render: static UI scaffolding
+  // ============================================================
+
+  // Build the six agent cards into the workflow panel
+  function renderAgents() {
+    const list = document.getElementById('agents');
+    list.innerHTML = AGENTS.map((a, i) => `
+      <li class="agent-card" data-agent="${i}" data-status="pending">
+        <div class="agent-row">
+          <div class="agent-icon" aria-hidden="true">${a.icon}</div>
+          <div class="agent-meta">
+            <div class="agent-num">Agent 0${i + 1}</div>
+            <p class="agent-name">${a.name}</p>
+            <p class="agent-role">${a.role}</p>
+          </div>
+          <div class="agent-status">
+            <span class="dot"></span><span class="label">Pending</span>
+          </div>
+        </div>
+        <pre class="agent-output" aria-live="polite"></pre>
+      </li>
+    `).join('');
+  }
+
+  // Build the example-prompt chips
+  function renderChips() {
+    const wrap = document.getElementById('chips');
+    wrap.innerHTML = CHIPS.map((c, i) =>
+      `<button type="button" class="chip" data-chip="${i}">${c.label}</button>`
+    ).join('');
+    wrap.addEventListener('click', e => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      applyChip(CHIPS[+btn.dataset.chip]);
+    });
+  }
+
+  // ============================================================
+  // Render: result panels (dynamic, from `rec`)
+  // ============================================================
+
+  // Recommended-parameters table (Panel A)
+  function renderParams(r) {
+    const rows = [
+      ['Solid Loading',           r.parameters.solid_loading,                     'vol%'],
+      ['Cooling Rate',            fmtSigned(r.parameters.cooling_rate),           '°C/min'],
+      ['Cold Plate Temperature',  fmtSigned(r.parameters.cold_plate_temp),        '°C'],
+      ['Dispersant (Darvan 811)', r.parameters.dispersant.toFixed(1),             'wt%'],
+      ['Binder (PVA)',            r.parameters.binder.toFixed(1),                 'wt%'],
+      ['Sintering Temperature',   r.parameters.sintering_temp,                    '°C']
+    ];
+    document.getElementById('param-rows').innerHTML = rows.map(([name, value, unit]) => `
+      <tr>
+        <td class="param-name">${name}</td>
+        <td class="param-value">${value}</td>
+        <td class="param-unit">${unit}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Predicted-properties bars (Panel B) — porosity & strength get target markers
+  function renderProperties(r) {
+    const pPct = clamp(r.predictions.porosity, 0, 100);
+    const poreSizePct  = clamp(r.predictions.pore_size, 0, 100);          // 0..100 µm scale
+    const wallPct      = clamp((r.predictions.wall_thickness / 35) * 100, 0, 100);
+    const alignPct     = clamp(r.predictions.alignment * 100, 0, 100);
+    const strengthPct  = clamp((r.predictions.strength / 15) * 100, 0, 100);
+    const props = [
+      {
+        name: 'Porosity', pct: pPct,
+        label: r.predictions.porosity.toFixed(1) + '%',
+        target: '~ ' + r.inputs.porosity_target + '%',
+        pass: r.targets.porosity_met
+      },
+      { name: 'Average Pore Size',    pct: poreSizePct, label: r.predictions.pore_size + ' µm',                target: null, pass: null },
+      { name: 'Wall Thickness',       pct: wallPct,     label: r.predictions.wall_thickness + ' µm',          target: null, pass: null },
+      { name: 'Pore Alignment Score', pct: alignPct,    label: r.predictions.alignment.toFixed(2) + ' / 1.0', target: null, pass: null },
+      {
+        name: 'Compressive Strength', pct: strengthPct,
+        label: r.predictions.strength.toFixed(1) + ' MPa',
+        target: '≥ ' + r.inputs.strength_target + ' MPa',
+        pass: r.targets.strength_met
+      }
+    ];
+    document.getElementById('prop-rows').innerHTML = props.map((p, i) => `
+      <div class="prop-row">
+        <div class="prop-head">
+          <span class="prop-name">${p.name}${p.target ? ' <span style="color:var(--color-muted)">— target ' + p.target + '</span>' : ''}</span>
+          <span class="prop-value">${p.label}${p.pass === true ? '<span class="check">✓</span>' : ''}${p.pass === false ? '<span class="check" style="color:var(--color-amber)">!</span>' : ''}</span>
+        </div>
+        <div class="prop-bar"><div class="prop-bar-fill" data-prop="${i}" data-target-pct="${p.pct}"></div></div>
+      </div>
+    `).join('');
+  }
+
+  // KPI cards (Panel C) — target vs predicted for porosity & strength
+  function renderKPIs(r) {
+    const kpis = [
+      {
+        name: 'Porosity',
+        targetLabel: r.inputs.porosity_target + '%',
+        predictedValue: r.predictions.porosity.toFixed(1),
+        unit: '%',
+        delta: r.targets.porosity_delta,
+        met: r.targets.porosity_met
+      },
+      {
+        name: 'Compressive Strength',
+        targetLabel: '≥ ' + r.inputs.strength_target + ' MPa',
+        predictedValue: r.predictions.strength.toFixed(1),
+        unit: 'MPa',
+        delta: r.targets.strength_delta,
+        met: r.targets.strength_met
+      }
+    ];
+    document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
+      <div class="kpi-card ${k.met ? 'pass' : 'fail'}">
+        <div class="kpi-name">${k.name}</div>
+        <div class="kpi-pair">
+          <span class="kpi-target">target<b>${k.targetLabel}</b></span>
+          <span class="kpi-arrow">→</span>
+          <span class="kpi-predicted">${k.predictedValue}<span class="unit">${k.unit}</span></span>
+        </div>
+        <span class="kpi-status">${k.met ? '✓ within window' : '! off-target'} &nbsp;Δ ${fmtDelta(k.delta)}</span>
+      </div>
+    `).join('');
+  }
+
+  // Final report card (Panel E)
+  function renderReport(r) {
+    document.getElementById('report-doc').textContent = buildReportText(r);
+  }
+
+  // ============================================================
+  // Input bindings
+  // ============================================================
+
+  // Wire up live-value labels next to the two range sliders
+  function bindLiveValues() {
+    const porosity = document.getElementById('porosity');
+    const strength = document.getElementById('strength');
+    porosity.addEventListener('input', () => {
+      document.getElementById('porosity-val').textContent = porosity.value + '%';
+      updateRangeFill(porosity);
+    });
+    strength.addEventListener('input', () => {
+      document.getElementById('strength-val').textContent = strength.value + ' MPa';
+      updateRangeFill(strength);
+    });
+  }
+
+  // Update the CSS --fill var so range tracks fill teal up to the thumb
+  function updateRangeFill(input) {
+    const min = +input.min, max = +input.max, val = +input.value;
+    const pct = ((val - min) / (max - min)) * 100;
+    input.style.setProperty('--fill', pct + '%');
+  }
+
+  // Wire up Run + Reset buttons
+  function bindButtons() {
+    document.getElementById('run-btn').addEventListener('click', runWorkflow);
+    document.getElementById('reset-btn').addEventListener('click', resetDemo);
+  }
+
+  // Apply a chip's preset to every input field and trigger a brief highlight flash
+  function applyChip(chip) {
+    const material = document.getElementById('material');
+    const method   = document.getElementById('method');
+    const porosity = document.getElementById('porosity');
+    const strength = document.getElementById('strength');
+    const notes    = document.getElementById('notes');
+
+    material.value = chip.material;
+    method.value   = chip.method;
+    porosity.value = chip.porosity;
+    strength.value = chip.strength;
+    notes.value    = chip.notes;
+
+    document.getElementById('porosity-val').textContent = chip.porosity + '%';
+    document.getElementById('strength-val').textContent = chip.strength + ' MPa';
+    updateRangeFill(porosity);
+    updateRangeFill(strength);
+
+    [material, method, porosity, strength, notes].forEach(el => {
+      el.classList.remove('flash');
+      void el.offsetWidth;
+      el.classList.add('flash');
+    });
+  }
+
+  // Read the current input state into a plain object
+  function readInputs() {
+    return {
+      material: document.getElementById('material').value,
+      method:   document.getElementById('method').value,
+      porosity: +document.getElementById('porosity').value,
+      strength: +document.getElementById('strength').value,
+      notes:    document.getElementById('notes').value
+    };
+  }
+
+  // ============================================================
+  // Workflow runtime
+  // ============================================================
+
+  // Compute the recommendation from current inputs, then run the agents
+  function runWorkflow() {
+    if (state.running) return;
+    state.running = true;
+    state.completed = 0;
+    state.rec = generateRecommendation(readInputs());
+
+    const btn = document.getElementById('run-btn');
+    btn.disabled = true;
+    btn.classList.add('ran');
+
+    updateProgress();
+
+    AGENTS.forEach((a, i) => {
+      const tStart = setTimeout(() => setAgentRunning(i), a.start);
+      const tDone  = setTimeout(() => {
+        setAgentCompleted(i);
+        state.completed++;
+        updateProgress();
+        if (i === AGENTS.length - 1) {
+          revealResults();
+        }
+      }, a.start + a.duration);
+      state.timeouts.push(tStart, tDone);
+    });
+  }
+
+  function setAgentRunning(i) {
+    const card = document.querySelector(`[data-agent="${i}"]`);
+    card.dataset.status = 'running';
+    card.querySelector('.agent-status .label').textContent = 'Running';
+  }
+
+  function setAgentCompleted(i) {
+    const card = document.querySelector(`[data-agent="${i}"]`);
+    card.dataset.status = 'completed';
+    card.querySelector('.agent-status .label').textContent = 'Completed';
+    card.querySelector('.agent-output').textContent = AGENT_TEMPLATES[AGENTS[i].key](state.rec);
+  }
+
+  // Drive the progress bar from the completed-agent count
+  function updateProgress() {
+    const pct = (state.completed / AGENTS.length) * 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // Render the panels (from `rec`), then fade them in with a stagger
+  function revealResults() {
+    state.running = false;
+    document.getElementById('results-placeholder').style.display = 'none';
+
+    // Build each panel's content from the current recommendation
+    renderParams(state.rec);
+    renderProperties(state.rec);
+    renderKPIs(state.rec);
+    renderReport(state.rec);
+
+    const panels = document.querySelectorAll('.result-panel');
+    panels.forEach((panel, i) => {
+      const t = setTimeout(() => {
+        panel.classList.add('visible');
+        if (panel.dataset.panel === 'radar')      renderRadarChart(state.rec);
+        if (panel.dataset.panel === 'properties') animatePropertyBars();
+      }, i * 400);
+      state.timeouts.push(t);
+    });
+  }
+
+  // Animate property bar widths to their target values
+  function animatePropertyBars() {
+    document.querySelectorAll('.prop-bar-fill').forEach(el => {
+      el.style.width = el.dataset.targetPct + '%';
+    });
+  }
+
+  // Normalize a recommendation into the 5-axis radar dataset
+  function buildRadarData(r) {
+    // All axes are normalized 0–1 for visual comparability
+    const targetPorosity   = clamp(r.inputs.porosity_target / 100, 0, 1);
+    const predPorosity     = clamp(r.predictions.porosity / 100, 0, 1);
+    const targetStrength   = clamp(r.inputs.strength_target / 15, 0, 1);
+    const predStrength     = clamp(r.predictions.strength / 15, 0, 1);
+
+    // Process-control axes — targets are sensible defaults; predicted comes from rec
+    const targetControl    = 0.65;
+    const predControl      = clamp(0.4 + Math.abs(r.parameters.cooling_rate) * 0.15, 0.3, 0.95);
+    const targetAlignment  = 0.70;
+    const predAlignment    = r.predictions.alignment;
+    const targetWall       = 0.70;
+    const predWall         = clamp(0.45 + (r.parameters.solid_loading - 22) / 26 * 0.45, 0.4, 0.95);
+
+    return {
+      labels:    ['Porosity', 'Pore Size', 'Alignment', 'Strength', 'Wall Uniformity'],
+      target:    [targetPorosity, targetControl, targetAlignment, targetStrength, targetWall],
+      predicted: [predPorosity,   predControl,   predAlignment,   predStrength,   predWall]
+    };
+  }
+
+  // Render the Chart.js radar chart with dark theme; safe to call after destroy
+  function renderRadarChart(r) {
+    if (state.chart) {
+      state.chart.destroy();
+      state.chart = null;
+    }
+    const data = buildRadarData(r);
+    const ctx = document.getElementById('radar-chart').getContext('2d');
+    state.chart = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: 'Target',
+            data: data.target,
+            backgroundColor: 'rgba(245,166,35,0.08)',
+            borderColor: '#f5a623',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            pointBackgroundColor: '#f5a623',
+            pointBorderColor: '#0a0e17',
+            pointRadius: 3,
+            pointHoverRadius: 5
+          },
+          {
+            label: 'Predicted',
+            data: data.predicted,
+            backgroundColor: 'rgba(0,201,177,0.15)',
+            borderColor: '#00c9b1',
+            borderWidth: 2,
+            pointBackgroundColor: '#00c9b1',
+            pointBorderColor: '#0a0e17',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            min: 0,
+            max: 1,
+            ticks: {
+              stepSize: 0.25,
+              color: '#6c7a8f',
+              backdropColor: 'transparent',
+              font: { family: "'DM Mono', monospace", size: 10 }
+            },
+            grid:       { color: 'rgba(0,201,177,0.12)' },
+            angleLines: { color: 'rgba(0,201,177,0.15)' },
+            pointLabels: {
+              color: '#e6ecf3',
+              font: { family: "'Syne', sans-serif", size: 12, weight: '500' }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#9aa7bd',
+              boxWidth: 14,
+              boxHeight: 2,
+              font: { family: "'DM Mono', monospace", size: 11 },
+              padding: 16
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0e1522',
+            borderColor: 'rgba(0,201,177,0.25)',
+            borderWidth: 1,
+            titleColor: '#e6ecf3',
+            bodyColor: '#9aa7bd',
+            titleFont: { family: "'Syne', sans-serif", size: 12 },
+            bodyFont:  { family: "'DM Mono', monospace", size: 11 }
+          }
+        }
+      }
+    });
+  }
+
+  // Full reset: clear timers, destroy chart, restore initial UI
+  function resetDemo() {
+    state.timeouts.forEach(clearTimeout);
+    state.timeouts = [];
+    state.completed = 0;
+    state.running = false;
+    state.rec = null;
+
+    if (state.chart) {
+      state.chart.destroy();
+      state.chart = null;
+    }
+
+    document.querySelectorAll('.agent-card').forEach(c => {
+      c.dataset.status = 'pending';
+      c.querySelector('.agent-status .label').textContent = 'Pending';
+      c.querySelector('.agent-output').textContent = '';
+    });
+
+    document.querySelectorAll('.result-panel').forEach(p => p.classList.remove('visible'));
+    document.querySelectorAll('.prop-bar-fill').forEach(el => { el.style.width = '0%'; });
+    document.getElementById('results-placeholder').style.display = '';
+
+    // Clear dynamic panel contents
+    document.getElementById('param-rows').innerHTML = '';
+    document.getElementById('prop-rows').innerHTML  = '';
+    document.getElementById('kpi-grid').innerHTML   = '';
+    document.getElementById('report-doc').textContent = '';
+
+    const btn = document.getElementById('run-btn');
+    btn.disabled = false;
+    btn.classList.remove('ran');
+
+    updateProgress();
+  }
+})();
+</script>
+
+</body>
+</html>

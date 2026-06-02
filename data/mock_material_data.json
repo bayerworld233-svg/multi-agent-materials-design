@@ -1,0 +1,275 @@
+{
+  "schema_version": "1.0.0",
+  "generated": "2026-06-02",
+  "note": "Mock data backing the multi-agent demo. Values are physically plausible but not experimentally validated.",
+
+  "material_systems": [
+    {
+      "id": "al2o3",
+      "name": "Porous Alumina",
+      "formula": "Al2O3",
+      "density_g_cm3": 3.95,
+      "melting_point_c": 2072,
+      "typical_porosity_range_pct": [60, 85],
+      "typical_strength_range_mpa": [2, 15],
+      "sintering_temp_c": 1550,
+      "common_applications": ["bone scaffold", "thermal insulation", "filtration membrane", "catalyst support"],
+      "freeze_casting_compatible": true
+    },
+    {
+      "id": "hap",
+      "name": "Hydroxyapatite",
+      "formula": "Ca10(PO4)6(OH)2",
+      "density_g_cm3": 3.16,
+      "melting_point_c": 1670,
+      "typical_porosity_range_pct": [55, 80],
+      "typical_strength_range_mpa": [1, 10],
+      "sintering_temp_c": 1250,
+      "common_applications": ["bone regeneration", "drug delivery", "biomedical scaffold"],
+      "freeze_casting_compatible": true
+    },
+    {
+      "id": "sic",
+      "name": "Silicon Carbide",
+      "formula": "SiC",
+      "density_g_cm3": 3.21,
+      "melting_point_c": 2730,
+      "typical_porosity_range_pct": [40, 75],
+      "typical_strength_range_mpa": [5, 30],
+      "sintering_temp_c": 2100,
+      "common_applications": ["high-temperature filter", "catalyst support", "structural foam"],
+      "freeze_casting_compatible": true
+    }
+  ],
+
+  "freeze_casting_database": [
+    {
+      "id": "fc-001",
+      "solid_loading": 28,
+      "cooling_rate": -0.8,
+      "cold_plate_temp": -15,
+      "dispersant_wt": 1.0,
+      "binder_wt": 2.5,
+      "porosity": 82.1,
+      "pore_size_um": 72,
+      "wall_thickness_um": 12,
+      "alignment_score": 0.58,
+      "compressive_strength_mpa": 2.1
+    },
+    {
+      "id": "fc-002",
+      "solid_loading": 30,
+      "cooling_rate": -1.0,
+      "cold_plate_temp": -18,
+      "dispersant_wt": 0.9,
+      "binder_wt": 2.3,
+      "porosity": 80.4,
+      "pore_size_um": 64,
+      "wall_thickness_um": 13,
+      "alignment_score": 0.62,
+      "compressive_strength_mpa": 2.9
+    },
+    {
+      "id": "fc-003",
+      "solid_loading": 31,
+      "cooling_rate": -1.5,
+      "cold_plate_temp": -25,
+      "dispersant_wt": 0.9,
+      "binder_wt": 2.2,
+      "porosity": 78.0,
+      "pore_size_um": 52,
+      "wall_thickness_um": 14,
+      "alignment_score": 0.71,
+      "compressive_strength_mpa": 3.6
+    },
+    {
+      "id": "fc-004",
+      "solid_loading": 32,
+      "cooling_rate": -1.8,
+      "cold_plate_temp": -28,
+      "dispersant_wt": 0.8,
+      "binder_wt": 2.1,
+      "porosity": 76.3,
+      "pore_size_um": 44,
+      "wall_thickness_um": 15,
+      "alignment_score": 0.77,
+      "compressive_strength_mpa": 4.5
+    },
+    {
+      "id": "fc-005",
+      "solid_loading": 33,
+      "cooling_rate": -1.5,
+      "cold_plate_temp": -25,
+      "dispersant_wt": 0.8,
+      "binder_wt": 2.0,
+      "porosity": 74.8,
+      "pore_size_um": 50,
+      "wall_thickness_um": 16,
+      "alignment_score": 0.72,
+      "compressive_strength_mpa": 5.0
+    },
+    {
+      "id": "fc-006",
+      "solid_loading": 34,
+      "cooling_rate": -1.8,
+      "cold_plate_temp": -30,
+      "dispersant_wt": 0.8,
+      "binder_wt": 2.0,
+      "porosity": 73.2,
+      "pore_size_um": 38,
+      "wall_thickness_um": 18,
+      "alignment_score": 0.84,
+      "compressive_strength_mpa": 6.4,
+      "is_recommended": true
+    },
+    {
+      "id": "fc-007",
+      "solid_loading": 35,
+      "cooling_rate": -2.0,
+      "cold_plate_temp": -30,
+      "dispersant_wt": 0.7,
+      "binder_wt": 1.9,
+      "porosity": 71.6,
+      "pore_size_um": 34,
+      "wall_thickness_um": 19,
+      "alignment_score": 0.86,
+      "compressive_strength_mpa": 7.1
+    },
+    {
+      "id": "fc-008",
+      "solid_loading": 36,
+      "cooling_rate": -2.5,
+      "cold_plate_temp": -35,
+      "dispersant_wt": 0.7,
+      "binder_wt": 1.8,
+      "porosity": 70.1,
+      "pore_size_um": 28,
+      "wall_thickness_um": 20,
+      "alignment_score": 0.89,
+      "compressive_strength_mpa": 8.3
+    },
+    {
+      "id": "fc-009",
+      "solid_loading": 38,
+      "cooling_rate": -2.0,
+      "cold_plate_temp": -30,
+      "dispersant_wt": 0.6,
+      "binder_wt": 1.7,
+      "porosity": 67.8,
+      "pore_size_um": 32,
+      "wall_thickness_um": 21,
+      "alignment_score": 0.85,
+      "compressive_strength_mpa": 9.5
+    },
+    {
+      "id": "fc-010",
+      "solid_loading": 40,
+      "cooling_rate": -2.8,
+      "cold_plate_temp": -35,
+      "dispersant_wt": 0.6,
+      "binder_wt": 1.6,
+      "porosity": 64.9,
+      "pore_size_um": 24,
+      "wall_thickness_um": 23,
+      "alignment_score": 0.91,
+      "compressive_strength_mpa": 11.0
+    },
+    {
+      "id": "fc-011",
+      "solid_loading": 42,
+      "cooling_rate": -3.0,
+      "cold_plate_temp": -40,
+      "dispersant_wt": 0.5,
+      "binder_wt": 1.5,
+      "porosity": 61.7,
+      "pore_size_um": 20,
+      "wall_thickness_um": 26,
+      "alignment_score": 0.93,
+      "compressive_strength_mpa": 12.8
+    },
+    {
+      "id": "fc-012",
+      "solid_loading": 45,
+      "cooling_rate": -3.5,
+      "cold_plate_temp": -40,
+      "dispersant_wt": 0.5,
+      "binder_wt": 1.4,
+      "porosity": 58.2,
+      "pore_size_um": 17,
+      "wall_thickness_um": 28,
+      "alignment_score": 0.95,
+      "compressive_strength_mpa": 14.5
+    }
+  ],
+
+  "agent_outputs": {
+    "planner": "Goal decomposed into 4 sub-tasks:\n[1] Retrieve freeze casting literature for Al2O3 systems\n[2] Identify process-structure correlations (porosity 70-75%)\n[3] Predict pore morphology from candidate parameters\n[4] Optimize solid loading + cooling rate for strength >= 6 MPa",
+    "literature": "Retrieved 3 relevant mechanisms:\n- Lamellar ice templating creates aligned pores (10-80 um)\n  parallel to freezing direction. [Deville et al., 2006]\n- Solid loading (30-45 vol%) inversely correlates with porosity;\n  lower loading -> higher porosity but reduced wall density.\n- Cooling rate controls lamellae spacing: faster cooling ->\n  finer pores (<20 um), higher alignment score.\nConfidence: 0.87",
+    "data": "Analyzed 847 data points from freeze casting database.\nKey correlations identified:\n  Porosity       up with  down solid loading    (r = -0.81)\n  Pore size      up with  down cooling rate     (r = -0.74)\n  Strength       up with  up   solid loading    (r = +0.79)\n  Alignment      up with  up   cooling rate     (r = +0.68)\nOptimal region: solid loading 32-36 vol%, cooling -1.5 to -2.0 C/min",
+    "prediction": "Running structure-property prediction model...\nInput: solid loading 34 vol%, cooling rate -1.8 C/min\n\nPredicted outputs:\n  Porosity            73.2%    [target: >70%  PASS]\n  Average pore size   38 um\n  Wall thickness      18 um\n  Pore alignment      0.84 / 1.0\n  Compressive strength 6.4 MPa  [target: >5 MPa  PASS]",
+    "optimization": "Bayesian optimization complete (128 iterations).\nRecommended process parameters:\n  Solid loading       34 vol%\n  Cooling rate        -1.8 C/min\n  Cold plate temp     -30 C\n  Dispersant (Darvan) 0.8 wt%\n  Binder (PVA)        2.0 wt%\n\nPareto front: porosity-strength trade-off resolved at this point.\nEstimated confidence: 0.82",
+    "report": "DESIGN RECOMMENDATION GENERATED\nMaterial: Porous Al2O3 via Freeze Casting\nObjective: Porosity >70%, Strength >5 MPa - ACHIEVED\n\nAll targets met. Proceed to experimental validation.\nSee recommendation panel for full parameter set."
+  },
+
+  "example_design_goals": [
+    {
+      "id": "biomedical-scaffold",
+      "label": "Biomedical scaffold - 75% porosity, 5 MPa",
+      "material_system": "al2o3",
+      "processing_method": "Freeze Casting",
+      "target_porosity_pct": 75,
+      "target_strength_mpa": 5,
+      "notes": "biomedical scaffold, needs interconnected pores for cell infiltration"
+    },
+    {
+      "id": "thermal-insulation",
+      "label": "Thermal insulation - 80% porosity, 3 MPa",
+      "material_system": "al2o3",
+      "processing_method": "Freeze Casting",
+      "target_porosity_pct": 80,
+      "target_strength_mpa": 3,
+      "notes": "low thermal conductivity, fine isotropic pore structure preferred"
+    },
+    {
+      "id": "filtration-membrane",
+      "label": "Filtration membrane - 65% porosity, 10 MPa",
+      "material_system": "al2o3",
+      "processing_method": "Freeze Casting",
+      "target_porosity_pct": 65,
+      "target_strength_mpa": 10,
+      "notes": "filtration membrane, aligned pore channels for high flux"
+    }
+  ],
+
+  "pareto_front": [
+    { "porosity_pct": 60, "strength_mpa": 12.5 },
+    { "porosity_pct": 65, "strength_mpa": 10.2 },
+    { "porosity_pct": 70, "strength_mpa": 8.0 },
+    { "porosity_pct": 73, "strength_mpa": 6.4 },
+    { "porosity_pct": 76, "strength_mpa": 4.9 },
+    { "porosity_pct": 79, "strength_mpa": 3.7 },
+    { "porosity_pct": 82, "strength_mpa": 2.6 },
+    { "porosity_pct": 85, "strength_mpa": 1.6 }
+  ],
+
+  "recommended_design": {
+    "material_system": "al2o3",
+    "processing_method": "Freeze Casting",
+    "parameters": {
+      "solid_loading_volpct": 34,
+      "cooling_rate_c_per_min": -1.8,
+      "cold_plate_temp_c": -30,
+      "dispersant_wt_pct": 0.8,
+      "binder_wt_pct": 2.0,
+      "sintering_temp_c": 1550
+    },
+    "predicted_properties": {
+      "porosity_pct": 73.2,
+      "average_pore_size_um": 38,
+      "wall_thickness_um": 18,
+      "alignment_score": 0.84,
+      "compressive_strength_mpa": 6.4
+    },
+    "confidence": 0.82
+  }
+}
